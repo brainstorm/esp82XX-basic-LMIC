@@ -10,6 +10,7 @@
 #include "esp82xxutil.h"
 #include "commonservices.h"
 #include "vars.h"
+#include "lmic.h"
 #include <mdns.h>
 
 #define procTaskPrio        0
