@@ -39,6 +39,8 @@
 #define LMIC_VERSION_MINOR 6
 #define LMIC_VERSION_BUILD 1468577746
 
+#define NULL 0
+
 //! Only For Antenna Tuning Tests !
 //#define CFG_TxContinuousMode 1
 

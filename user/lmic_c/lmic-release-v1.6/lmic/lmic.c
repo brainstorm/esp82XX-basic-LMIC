@@ -126,11 +126,13 @@ u1_t os_getBattLevel (void) {
 #if !defined(os_crc16)
 // New CRC-16 CCITT(XMODEM) checksum for beacons:
 u2_t os_crc16 (xref2u1_t data, uint len) {
+    u1_t bit;
     u2_t remainder = 0;
     u2_t polynomial = 0x1021;
-    for( uint i = 0; i < len; i++ ) {
+    uint i;
+    for( i = 0; i < len; i++ ) {
         remainder ^= data[i] << 8;
-        for( u1_t bit = 8; bit > 0; bit--) {
+        for( bit = 8; bit > 0; bit--) {
             if( (remainder & 0x8000) )
                 remainder = (remainder << 1) ^ polynomial;
             else 
@@ -561,7 +563,8 @@ static void initDefaultChannels (bit_t join) {
 
     LMIC.channelMap = 0x3F;
     u1_t su = join ? 0 : 6;
-    for( u1_t fu=0; fu<6; fu++,su++ ) {
+    u1_t fu;
+    for( fu=0; fu<6; fu++,su++ ) {
         LMIC.channelFreq[fu]  = iniChannelFreq[su];
         LMIC.channelDrMap[fu] = DR_RANGE_MAP(DR_SF12,DR_SF7);
     }
@@ -630,10 +633,12 @@ static u4_t convFreq (xref2u1_t ptr) {
 }
 
 static u1_t mapChannels (u1_t chpage, u2_t chmap) {
+    u1_t chnl;
+
     // Bad page, disable all channel, enable non-existent
     if( chpage != 0 || chmap==0 || (chmap & ~LMIC.channelMap) != 0 )
         return 0;  // illegal input
-    for( u1_t chnl=0; chnl<MAX_CHANNELS; chnl++ ) {
+    for( chnl=0; chnl<MAX_CHANNELS; chnl++ ) {
         if( (chmap & (1<<chnl)) != 0 && LMIC.channelFreq[chnl] == 0 )
             chmap &= ~(1<<chnl); // ignore - channel is not defined
     }
@@ -657,16 +662,16 @@ static void updateTx (ostime_t txbeg) {
 
 static ostime_t nextTx (ostime_t now) {
     u1_t bmap=0xF;
+    u1_t band, bi, ci;
     do {
         ostime_t mintime = now + /*10h*/36000*OSTICKS_PER_SEC;
-        u1_t band=0;
-        for( u1_t bi=0; bi<4; bi++ ) {
+        for( bi=0; bi<4; bi++ ) {
             if( (bmap & (1<<bi)) && mintime - LMIC.bands[bi].avail > 0 )
                 mintime = LMIC.bands[band = bi].avail;
         }
         // Find next channel in given band
         u1_t chnl = LMIC.bands[band].lastchnl;
-        for( u1_t ci=0; ci<MAX_CHANNELS; ci++ ) {
+        for( ci=0; ci<MAX_CHANNELS; ci++ ) {
             if( (chnl = (chnl+1)) >= MAX_CHANNELS )
                 chnl -=  MAX_CHANNELS;
             if( (LMIC.channelMap & (1<<chnl)) != 0  &&  // channel enabled
@@ -750,7 +755,9 @@ static ostime_t nextJoinState (void) {
 
 
 static void initDefaultChannels (void) {
-    for( u1_t i=0; i<4; i++ )
+    u1_t i;
+
+    for( i=0; i<4; i++ )
         LMIC.channelMap[i] = 0xFFFF;
     LMIC.channelMap[4] = 0x00FF;
 }
@@ -778,9 +785,11 @@ void LMIC_disableChannel (u1_t channel) {
 }
 
 static u1_t mapChannels (u1_t chpage, u2_t chmap) {
+    u1_t u;
+
     if( chpage == MCMD_LADR_CHP_125ON || chpage == MCMD_LADR_CHP_125OFF ) {
         u2_t en125 = chpage == MCMD_LADR_CHP_125ON ? 0xFFFF : 0x0000;
-        for( u1_t u=0; u<4; u++ )
+        for( u=0; u<4; u++ )
             LMIC.channelMap[u] = en125;
         LMIC.channelMap[64/16] = chmap;
     } else {
@@ -816,18 +825,20 @@ static void updateTx (ostime_t txbeg) {
 // US does not have duty cycling - return now as earliest TX time
 #define nextTx(now) (_nextTx(),(now))
 static void _nextTx (void) {
+    u1_t i;
+
     if( LMIC.chRnd==0 )
         LMIC.chRnd = os_getRndU1() & 0x3F;
     if( LMIC.datarate >= DR_SF8C ) { // 500kHz
         u1_t map = LMIC.channelMap[64/16]&0xFF;
-        for( u1_t i=0; i<8; i++ ) {
+        for( i=0; i<8; i++ ) {
             if( (map & (1<<(++LMIC.chRnd & 7))) != 0 ) {
                 LMIC.txChnl = 64 + (LMIC.chRnd & 7);
                 return;
             }
         }
     } else { // 125kHz
-        for( u1_t i=0; i<64; i++ ) {
+        for( i=0; i<64; i++ ) {
             u1_t chnl = ++LMIC.chRnd & 0x3F;
             if( (LMIC.channelMap[(chnl >> 4)] & (1<<(chnl & 0xF))) != 0 ) {
                 LMIC.txChnl = chnl;
@@ -1336,6 +1347,8 @@ static bit_t processJoinAccept (void) {
     ASSERT(LMIC.txrxFlags != TXRX_DNW1 || LMIC.dataLen != 0);
     ASSERT((LMIC.opmode & OP_TXRXPEND)!=0);
 
+    u1_t chidx;
+
     if( LMIC.dataLen == 0 ) {
       nojoinframe:
         if( (LMIC.opmode & OP_JOINING) == 0 ) {
@@ -1395,7 +1408,7 @@ static bit_t processJoinAccept (void) {
         goto badframe;
 #endif
         dlen = OFF_CFLIST;
-        for( u1_t chidx=3; chidx<8; chidx++, dlen+=3 ) {
+        for( chidx=3; chidx<8; chidx++, dlen+=3 ) {
             u4_t freq = convFreq(&LMIC.frame[dlen]);
             if( freq )
                 LMIC_setupChannel(chidx, freq, 0, -1);
