@@ -13,6 +13,7 @@
 #include <mdns.h>
 
 #include "lmic/lmic.h"
+#include "lmic/hal.h"
 
 #define procTaskPrio        0
 #define procTaskQueueLen    1
@@ -123,6 +124,8 @@ void user_init(void)
 
 	system_os_post(procTaskPrio, 0, 0 );
 
+	LMIC_init();
+	//LMIC_sendAlive();
 	LMIC_reset();
 }
 

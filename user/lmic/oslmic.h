@@ -59,8 +59,15 @@ typedef const char* str_t;
 #define ASSERT(cond) /**/
 #endif
 
-//#define os_clearMem(a,b)   memset(a,0,b)
-//#define os_copyMem(a,b,c)  memcpy(a,b,c)
+//XXX: #ifdef defined(CFG_BARE_LORA_ESP82XX)
+#define os_clearMem(a,b)   ets_memset(a,0,b)
+#define os_copyMem(a,b,c)  ets_memcpy(a,b,c)
+/*
+#else
+#define os_clearMem(a,b)   memset(a,0,b)
+#define os_copyMem(a,b,c)  memcpy(a,b,c)
+#endif
+*/
 
 typedef     struct osjob_t osjob_t;
 typedef      struct band_t band_t;
