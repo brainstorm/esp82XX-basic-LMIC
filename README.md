@@ -1,18 +1,12 @@
-# ESP82XX basic project
+# Experiment on porting LMIC (LoRa) to a bare ESP82XX 
 
-Simple firmware and tools to experiment with using submodules as a means to share common components between individual ESP8266/85 projects.
+***WARNING:*** Not working yet, too big footprint for now:
 
-ESP82XX-basic is a stripped down version of @cnlohr's esp8266ws2812i2s, who deserves **all** the recognition.
-The ESP8266/8285 chips are products of Espressif and are awesome "internet of things" solutions.
+```
+~/dev/espressif/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/../../../../xtensa-lx106-elf/bin/ld: image.elf section `.text' will not fit in region `iram1_0_seg'
+~/dev/espressif/esp-open-sdk/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.5/../../../../xtensa-lx106-elf/bin/ld: region `iram1_0_seg' overflowed by 5988 bytes
+collect2: error: ld returned 1 exit status
+```
 
-## Features
-
-The project provides the following basic cuntionality:
-
- - Web-Interface based on Websockets
- - Network configuration over the Web-Interface
- - Identification of other ESP moules
- - Basic GPIO toggling
- - Flashing of firmware and Web-Interface over Network
- - Fun
-
+ESP82XX-basic-LMIC is a stripped down version of @cnlohr's and @con-fu-se's [esp82XX-basic](https://github.com/con-f-use/esp82XX-basic) **plus** the LoRa ["LMIC" stack from IBM](https://www.research.ibm.com/labs/zurich/ics/lrsc/lmic.html), inspired on the [LMIC Arduino+ESP8266 port](https://github.com/things4u/LoRa-LMIC-1.51) from @things4u but
+with a focus on just using bare ESP82xx's SDKs, without involving Arduino's ecosystem.
