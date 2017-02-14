@@ -26,6 +26,7 @@
  */
 
 #include "oslmic.h"
+#include "c_types.h"
 
 #define AES_MICSUB 0x30 // internal use only
 
